@@ -1,0 +1,56 @@
+version: 2.1
+
+setup: true
+
+parameters:
+  base-revision:
+    type: string
+    default: "main"
+  configuration_path:
+    type: string
+    default: ".circleci/continue_config.yml"
+  parameters_file:
+    type: string
+    default: "/tmp/pipeline-parameters.json"
+
+orbs:
+  path-filtering: circleci/path-filtering@1.0.0
+  continuation: circleci/continuation@1.0.0
+
+jobs:
+  check-prs-and-labels:
+    docker:
+      - image: cimg/base:2024.07
+    resource_class: small
+    environment:
+      CONFIG_PATH: << pipeline.parameters.configuration_path >>
+      PARAM_FILE: << pipeline.parameters.parameters_file >>
+    steps:
+      - checkout
+      - run: 
+          name: Check if there is an open PR
+          command: ./circleci-scripts/pr-checker.sh
+      - run: 
+          name: Check if PR is a draft
+          command: ./circleci-scripts/draft-checker.sh
+      - path-filtering/set-parameters:
+          mapping: |
+            packages/api/.* api true
+            packages/auth/.* auth true
+            packages/e2e/.* e2e true
+            packages/unit/.* unit true
+            src/.* build-and-test true
+          ## Optional, defaults to main:
+          base-revision: << pipeline.parameters.base-revision >>
+      - run:
+          name: Check for open PRs labels, and update parameters
+          command: ./circleci-scripts/label-checker.sh
+      - continuation/continue:
+          parameters: << pipeline.parameters.parameters_file >>
+          configuration_path: << pipeline.parameters.configuration_path >>
+  
+
+workflows:
+  setup-workflow:
+    jobs:
+      - check-prs-and-labels
