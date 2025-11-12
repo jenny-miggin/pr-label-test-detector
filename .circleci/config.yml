@@ -30,9 +30,6 @@ jobs:
       - run: 
           name: Check if there is an open PR
           command: ./circleci-scripts/pr-checker.sh
-      - run: 
-          name: Check if PR is a draft
-          command: ./circleci-scripts/draft-checker.sh
       - path-filtering/set-parameters:
           mapping: |
             packages/api/.* api true
