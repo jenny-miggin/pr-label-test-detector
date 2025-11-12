@@ -27,9 +27,6 @@ jobs:
       PARAM_FILE: << pipeline.parameters.parameters_file >>
     steps:
       - checkout
-      - run: 
-          name: Check if there is an open PR
-          command: ./circleci-scripts/pr-checker.sh
       - path-filtering/set-parameters:
           mapping: |
             packages/api/.* api true
@@ -50,8 +47,4 @@ jobs:
 workflows:
   setup-workflow:
     jobs:
-      - check-prs-and-labels:
-          filters:
-            branches:
-              only:
-                - main
+      - check-prs-and-labels
