@@ -50,4 +50,8 @@ jobs:
 workflows:
   setup-workflow:
     jobs:
-      - check-prs-and-labels
+      - check-prs-and-labels:
+          filters:
+            branches:
+              only:
+                - main
