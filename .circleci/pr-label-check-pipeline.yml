@@ -46,6 +46,9 @@ jobs:
 
 workflows:
   setup-workflow:
-    when: pipeline.event.action == "labeled"
+    when:
+      and:
+        - equal: [ pull_request, << pipeline.event.name >> ]
+        - equal: [ labeled, << pipeline.event.action >> ]
     jobs:
       - check-prs-and-labels
